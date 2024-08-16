@@ -41,7 +41,18 @@ setup_dialogs(dp)
 async def cmd_start(message: types.Message, dialog_manager: DialogManager, command: CommandObject):
     global db
 
-    db_user = db.User.get(db.User.id == message.from_user.id)
+    #db_user = db.User.get(db.User.id == message.from_user.id)
+
+    if not db.User.select().where(db.User.id == message.from_user.id).exists():
+        usr_name = message.from_user.first_name
+
+        if message.from_user.last_name is not None:
+            usr_name += ' ' +  message.from_user.last_name
+
+        usr = db.User(id = message.from_user.id, name = usr_name)
+        usr.save(force_insert=True)
+    else:
+        db_user = db.User.get(db.User.id == message.from_user.id)
 
     #print(command.args)
 

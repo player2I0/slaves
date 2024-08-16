@@ -1,8 +1,11 @@
-from aiogram_dialog import Window, Dialog, DialogManager
+import re
+
+from aiogram_dialog import Window, Dialog, DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup
+from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.text import Const, Format, List
 
-from aiogram.types import User
+from aiogram.types import User, ContentType, Message
 from aiogram import Bot
 from aiogram.utils.deep_linking import create_start_link, decode_payload
 
@@ -40,7 +43,7 @@ async def home_getter(dialog_manager: DialogManager, event_from_user: User, db_u
 
     return data
 
-async def slaves_getter(dialog_manager: DialogManager, event_from_user: User, db_user: UserDB, bot: Bot, **kwargs):
+async def slaves_getter(dialog_manager: DialogManager, event_from_user: User, db_user: UserDB, **kwargs):
     l = []
     i = 0
 
@@ -52,6 +55,21 @@ async def slaves_getter(dialog_manager: DialogManager, event_from_user: User, db
         i += 1
 
     return {'slaves': l}
+
+async def slave_number_handler(message: Message, message_input: MessageInput, dialog_manager: DialogManager, **kwargs):
+    slave_index = re.sub(r"\D+", '', message.text)
+    #print(slave_index)
+    await message.delete()
+
+    if len(slave_index) > 0:
+        slave_index = int(slave_index)
+        
+        db_user = UserDB.get(UserDB.id == message.from_user.id)
+
+        if slave_index <= len(db_user.slaves):
+            await dialog_manager.start(state=states.SlaveManager.info, data={'popup': True})
+    
+    dialog_manager.show_mode = ShowMode.EDIT
 
 dialog = Dialog(
     Window(
@@ -83,6 +101,7 @@ dialog = Dialog(
             hide_pager=True
         ),
         SwitchTo(Format("{l_back}"), state=states.Home.home, id="home"),
+        MessageInput(slave_number_handler, content_types=[ContentType.TEXT]),
         getter=slaves_getter,
         state=states.Home.slaves,
     ),

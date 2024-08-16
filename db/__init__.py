@@ -10,12 +10,14 @@ class UsersModel(pw.Model):
 class User(UsersModel):
     id = pw.IntegerField(primary_key=True)
     ownerId = pw.IntegerField(default=-1)
-    slaves = phf.PickleField(default=set())
+    slaves = phf.PickleField(default=[])
     name = pw.TextField()
 
     def enslave(self, owner):
         self.ownerId = owner.id
-        owner.slaves.add(self.id)
+        
+        if self.id not in owner.slaves:
+            owner.slaves.append(self.id)
         
         self.save()
         owner.save()

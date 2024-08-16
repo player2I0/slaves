@@ -15,3 +15,7 @@ class Home(StatesGroup):
     home = State()
     link = State()
     slaves = State()
+
+
+class SlaveManager(StatesGroup):
+    info = State()

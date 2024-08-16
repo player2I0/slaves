@@ -9,8 +9,15 @@ class UsersModel(pw.Model):
 
 class User(UsersModel):
     id = pw.IntegerField(primary_key=True)
-    ownerId = pw.IntegerField()
-    slaves = phf.CompressedField()
+    ownerId = pw.IntegerField(default=-1)
+    slaves = phf.CompressedField(default=[])
+
+    def enslave(self, owner):
+        self.ownerId = owner.id
+        owner.slaves.append(self.id)
+        
+        self.save()
+        owner.save()
 
 user_db.connect()
 user_db.create_tables([User])

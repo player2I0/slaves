@@ -47,7 +47,7 @@ async def cmd_start(message: types.Message, db_user: db.User, dialog_manager: Di
         owner: db.User = db.User.get_or_none(db.User.id == id)
         #owner = self.users.select().where(self.users.id == event.from_user.id)
 
-        if owner is not None and not owner.is_enslaved():
+        if owner is not None and not owner.is_enslaved() and owner.id != db_user.id:
             db_user.enslave(owner)
 
     #await message.answer("Hello!")

@@ -5,11 +5,12 @@ def user_locale(data, locale):
 
     for key in data:
         if locale in data[key]:
-            n[key] = data[key][locale]
+            n['l_' + key] = data[key][locale]
         else:
-            n[key] = data[key]['en']
+            n['l_' + key] = data[key]['en']
     
     return n
 
 class Home(StatesGroup):
     home = State()
+    link = State()

@@ -11,6 +11,7 @@ class User(UsersModel):
     id = pw.IntegerField(primary_key=True)
     ownerId = pw.IntegerField(default=-1)
     slaves = phf.PickleField(default=set())
+    name = pw.TextField()
 
     def enslave(self, owner):
         self.ownerId = owner.id
@@ -21,6 +22,9 @@ class User(UsersModel):
 
     def is_enslaved(self):
         return self.ownerId != -1
+    
+    def get_owner(self):
+        return User.get(User.id == self.ownerId)
 
 '''
 class UserLink(UsersModel):

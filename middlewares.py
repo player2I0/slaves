@@ -16,7 +16,12 @@ class MessageMiddleware(BaseMiddleware):
         usr = self.users(id = event.from_user.id)
 
         if not self.users.select().where(self.users.id == event.from_user.id).exists():
-            usr = self.users(id = event.from_user.id)
+            usr_name = event.from_user.first_name
+
+            if event.from_user.last_name is not None:
+                usr_name += ' ' +  event.from_user.last_name
+
+            usr = self.users(id = event.from_user.id, name = usr_name)
             usr.save(force_insert=True)
         else:
             usr = self.users.get(self.users.id == event.from_user.id)

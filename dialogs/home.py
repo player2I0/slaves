@@ -1,5 +1,5 @@
 from aiogram_dialog import Window, Dialog, DialogManager
-from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo
+from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup
 from aiogram_dialog.widgets.text import Const, Format, List
 
 from aiogram.types import User
@@ -14,14 +14,15 @@ import states
 
 async def home_getter(dialog_manager: DialogManager, event_from_user: User, db_user: UserDB, bot: Bot, **kwargs):
     #print('get!')
-    data = {'has_slaves': False}
+    data = {'has_slaves': False, 'has_owner': False}
 
     locale = {
         "welcome": {"en": "Hello"},
         "link": {'en': "Your link: ", "ru": "Ваша ссылка: "},
         "back": {"en": "‹ Back", "ru": "‹ Назад"},
         "get_link": {"en": "Your link", "ru": "Ваша ссылка"},
-        "slaves": {"en": "Your slaves", "ru": "Ваши рабы"}
+        "slaves": {"en": "Your slaves", "ru": "Ваши рабы"},
+        "slaves_tip": {"en": "Send a message with slave's index to get info about the slave.", "ru": "Отправьте сообщение с номером раба, чтобы узнать о нём больше."}
     }
 
     if db_user.is_enslaved():
@@ -30,10 +31,7 @@ async def home_getter(dialog_manager: DialogManager, event_from_user: User, db_u
     else:
         locale['status'] = {'en': "You are currently free", "ru": "Вы (пока что) свободны"}
 
-        slaves = list(UserDB.select().where(UserDB.ownerId == db_user.id))
-        data['slaves'] = [(f"{slaves[i].name}", i) for i in range(len(slaves))]
-
-        if len(slaves) > 0:
+        if len(db_user.slaves) > 0:
             data['has_slaves'] = True
 
     data = data | states.user_locale(locale, event_from_user.language_code) #merge two dicts together (python 3.9+)
@@ -41,6 +39,19 @@ async def home_getter(dialog_manager: DialogManager, event_from_user: User, db_u
     data['link'] = await create_start_link(bot, str(event_from_user.id), encode=True)
 
     return data
+
+async def slaves_getter(dialog_manager: DialogManager, event_from_user: User, db_user: UserDB, bot: Bot, **kwargs):
+    l = []
+    i = 0
+
+    for slave_id in db_user.slaves:
+        slave = UserDB.get(UserDB.id == slave_id)
+
+        l.append((slave.name, i))
+        
+        i += 1
+
+    return {'slaves': l}
 
 dialog = Dialog(
     Window(
@@ -56,13 +67,23 @@ dialog = Dialog(
         state=states.Home.link,
     ),
     Window(
-        Format("{l_slaves}:"),
-        SwitchTo(Format("{l_back}"), state=states.Home.home, id="home"),
+        Format("{l_slaves_tip}"),
+        Format("{l_slaves}:\n"),
         List(
             Format("{pos}. {item[0]}"),
             items="slaves",
-            page_size=30
+            page_size=20,
+            id="slaves_list"
         ),
+        ScrollingGroup(
+            NumberedPager(scroll="slaves_list"),
+            width=8,
+            height=8,
+            id = 'g_scr',
+            hide_pager=True
+        ),
+        SwitchTo(Format("{l_back}"), state=states.Home.home, id="home"),
+        getter=slaves_getter,
         state=states.Home.slaves,
     ),
     getter=home_getter

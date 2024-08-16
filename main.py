@@ -3,7 +3,7 @@ import logging
 import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
-from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
+#from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from aiogram_dialog import DialogManager, StartMode, setup_dialogs
@@ -26,8 +26,12 @@ bot = Bot(token=os.environ.get("TOKEN"))
 
 STORAGE = MemoryStorage()
 dp = Dispatcher(storage=STORAGE)
-dp.message.middleware(middlewares.MessageMiddleware(db.User))
+
 dialogs.setup(dp)
+setup_dialogs(dp)
+
+dp.message.middleware(middlewares.MessageMiddleware(db.User))
+dp.callback_query.middleware(middlewares.MessageMiddleware(db.User))
 
 # Хэндлер на команду /start
 @dp.message(Command("start"))
@@ -41,7 +45,7 @@ async def cmd_start(message: types.Message, db_user: db.User, dialog_manager: Di
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    setup_dialogs(dp)
+    
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

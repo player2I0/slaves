@@ -10,14 +10,23 @@ class UsersModel(pw.Model):
 class User(UsersModel):
     id = pw.IntegerField(primary_key=True)
     ownerId = pw.IntegerField(default=-1)
-    slaves = phf.CompressedField(default=[])
+    slaves = phf.PickleField(default=set())
 
     def enslave(self, owner):
         self.ownerId = owner.id
-        owner.slaves.append(self.id)
+        owner.slaves.add(self.id)
         
         self.save()
         owner.save()
+
+    def is_enslaved(self):
+        return self.ownerId != -1
+
+'''
+class UserLink(UsersModel):
+    user = pw.ForeignKeyField(User)
+    link = pw.TextField()
+'''
 
 user_db.connect()
 user_db.create_tables([User])

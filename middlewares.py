@@ -15,7 +15,7 @@ class MessageMiddleware(BaseMiddleware):
         #print(list(self.users.select().where(self.users.id == event.from_user.id)))
         usr = self.users(id = event.from_user.id)
 
-        if len(list(self.users.select().where(self.users.id == event.from_user.id))) == 0:
+        if not self.users.select().where(self.users.id == event.from_user.id).exists():
             usr = self.users(id = event.from_user.id)
             usr.save(force_insert=True)
         else:
@@ -23,5 +23,4 @@ class MessageMiddleware(BaseMiddleware):
 
         #return {'db_user': usr}
         data['db_user'] = usr
-        print('um')
         return await handler(event, data)

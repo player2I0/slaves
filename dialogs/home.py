@@ -2,7 +2,7 @@ import re
 
 from aiogram_dialog import Window, Dialog, DialogManager, ShowMode, StartMode
 from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup
-from aiogram_dialog.widgets.input import MessageInput
+from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.text import Const, Format, List
 
 from aiogram.types import User, ContentType, Message
@@ -62,6 +62,7 @@ async def slave_number_handler(message: Message, message_input: MessageInput, di
     slave_index = re.sub(r"\D+", '', message.text)
     #print(slave_index)
     await message.delete()
+    dialog_manager.show_mode = ShowMode.EDIT
 
     if len(slave_index) > 0:
         slave_index = int(slave_index) - 1
@@ -70,9 +71,16 @@ async def slave_number_handler(message: Message, message_input: MessageInput, di
 
         if slave_index <= len(db_user.slaves):
             slave = UserDB.get(UserDB.id == db_user.slaves[slave_index])
-            await dialog_manager.start(state=states.SlaveManager.info, data={'popup': True, "slave_id": slave.id}, mode=StartMode.NEW_STACK, show_mode=ShowMode.EDIT)
-    
+            #await dialog_manager.update()
+            #print(message_input)
+            await dialog_manager.start(state=states.SlaveManager.info, data={'popup': True, "slave_id": slave.id}, mode=StartMode.NORMAL, show_mode=ShowMode.EDIT)
+            dialog_manager.show_mode = ShowMode.EDIT
+
+async def nigga(message, message_input: TextInput, dialog_manager: DialogManager, text):
+    #print(args)
+    #await message.delete()
     dialog_manager.show_mode = ShowMode.EDIT
+    await dialog_manager.start(state=states.SlaveManager.info, data={'popup': True, "slave_id": 1321983182}, mode=StartMode.NEW_STACK, show_mode=ShowMode.EDIT)
 
 dialog = Dialog(
     Window(
@@ -105,6 +113,7 @@ dialog = Dialog(
         ),
         SwitchTo(Format("{l_back}"), state=states.Home.home, id="home"),
         MessageInput(slave_number_handler, content_types=[ContentType.TEXT]),
+        #TextInput(id="slave_index", on_success=nigga),
         getter=slaves_getter,
         state=states.Home.slaves,
     ),

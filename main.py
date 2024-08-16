@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 #from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.base import BaseEventIsolation
 from aiogram.filters import CommandStart, CommandObject
 from aiogram.utils.deep_linking import create_start_link, decode_payload
 from aiogram.client.default import DefaultBotProperties
@@ -37,8 +38,10 @@ setup_dialogs(dp)
 
 # Хэндлер на команду /start
 @dp.message(Command("start"))
-async def cmd_start(message: types.Message, db_user: db.User, dialog_manager: DialogManager, command: CommandObject):
+async def cmd_start(message: types.Message, dialog_manager: DialogManager, command: CommandObject):
     global db
+
+    db_user = db.User.get(db.User.id == message.from_user.id)
 
     #print(command.args)
 
@@ -54,12 +57,13 @@ async def cmd_start(message: types.Message, db_user: db.User, dialog_manager: Di
     await dialog_manager.start(states.Home.home, mode=StartMode.RESET_STACK)
 
 @dp.message(Command("link"))
-async def cmd_start(message: types.Message, db_user: db.User, dialog_manager: DialogManager, command: CommandObject):
+async def cmd_start(message: types.Message, dialog_manager: DialogManager, command: CommandObject):
     await message.answer(await create_start_link(bot, str(message.from_user.id), encode=True))
 
 @dp.message(Command("slave"))
-async def cmd_start(message: types.Message, db_user: db.User, dialog_manager: DialogManager):
+async def cmd_start(message: types.Message, dialog_manager: DialogManager):
     global db
+    db_user = db.User.get(db.User.id == message.from_user.id)
 
     #print(db_user.id)
 

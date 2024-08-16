@@ -1,4 +1,4 @@
-from dialogs import home
+from dialogs import home, slave
 
 def setup(dp):
-    dp.include_routers(home.dialog)
+    dp.include_routers(home.dialog, slave.manager)

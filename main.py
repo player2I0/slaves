@@ -7,6 +7,7 @@ from aiogram.filters.command import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.filters import CommandStart, CommandObject
 from aiogram.utils.deep_linking import create_start_link, decode_payload
+from aiogram.client.default import DefaultBotProperties
 
 from aiogram_dialog import DialogManager, StartMode, setup_dialogs
 
@@ -20,7 +21,7 @@ import states
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
 # Объект бота
-bot = Bot(token=os.environ.get("TOKEN"))
+bot = Bot(token=os.environ.get("TOKEN"), default=DefaultBotProperties(parse_mode='HTML'))
 # Диспетчер
 
 #STORAGE = RedisStorage.from_url('redis://localhost:6379', key_builder=DefaultKeyBuilder(with_bot_id=True, 
@@ -32,8 +33,7 @@ dp = Dispatcher(storage=STORAGE)
 dialogs.setup(dp)
 setup_dialogs(dp)
 
-dp.message.middleware(middlewares.MessageMiddleware(db.User))
-dp.callback_query.middleware(middlewares.MessageMiddleware(db.User))
+#dp.update.middleware(middlewares.MessageMiddleware(db.User))
 
 # Хэндлер на команду /start
 @dp.message(Command("start"))

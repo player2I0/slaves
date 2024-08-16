@@ -1,6 +1,6 @@
 import re
 
-from aiogram_dialog import Window, Dialog, DialogManager, ShowMode
+from aiogram_dialog import Window, Dialog, DialogManager, ShowMode, StartMode
 from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.text import Const, Format, List
@@ -15,8 +15,9 @@ from db import User as UserDB
 
 import states
 
-async def home_getter(dialog_manager: DialogManager, event_from_user: User, db_user: UserDB, bot: Bot, **kwargs):
+async def home_getter(dialog_manager: DialogManager, event_from_user: User, bot: Bot, **kwargs):
     #print('get!')
+    db_user = UserDB.get(UserDB.id == event_from_user.id)
     data = {'has_slaves': False, 'has_owner': False}
 
     locale = {
@@ -43,7 +44,8 @@ async def home_getter(dialog_manager: DialogManager, event_from_user: User, db_u
 
     return data
 
-async def slaves_getter(dialog_manager: DialogManager, event_from_user: User, db_user: UserDB, **kwargs):
+async def slaves_getter(dialog_manager: DialogManager, event_from_user: User, **kwargs):
+    db_user = UserDB.get(UserDB.id == event_from_user.id)
     l = []
     i = 0
 
@@ -62,12 +64,13 @@ async def slave_number_handler(message: Message, message_input: MessageInput, di
     await message.delete()
 
     if len(slave_index) > 0:
-        slave_index = int(slave_index)
+        slave_index = int(slave_index) - 1
         
         db_user = UserDB.get(UserDB.id == message.from_user.id)
 
         if slave_index <= len(db_user.slaves):
-            await dialog_manager.start(state=states.SlaveManager.info, data={'popup': True})
+            slave = UserDB.get(UserDB.id == db_user.slaves[slave_index])
+            await dialog_manager.start(state=states.SlaveManager.info, data={'popup': True, "slave_id": slave.id}, mode=StartMode.NEW_STACK, show_mode=ShowMode.EDIT)
     
     dialog_manager.show_mode = ShowMode.EDIT
 

@@ -15,8 +15,27 @@ from db import User as UserDB
 
 import states
 
-dialog = Dialog(
+async def slave_manager_getter(dialog_manager: DialogManager, event_from_user: User, bot: Bot, **kwargs):
+    db_user = UserDB.get(UserDB.id == event_from_user.id)
+    data = {}
+
+    locale = {
+        "back": {"en": "‹ Back", "ru": "‹ Назад"},
+    }
+
+    data = data | states.user_locale(locale, event_from_user.language_code) #merge two dicts together (python 3.9+)
+
+    slave = UserDB.get(UserDB.id == dialog_manager.start_data['slave_id'])
+    data['slave_id'] = dialog_manager.start_data['slave_id']
+    data['slave_name'] = slave.name
+
+    return data
+
+manager = Dialog(
     Window(
-        
-    )
+        Format('<b>{slave_name}</b>'),
+        Back(Format('{l_back}'), when=F['popup']),
+        state=states.SlaveManager.info
+    ),
+    getter=slave_manager_getter
 )

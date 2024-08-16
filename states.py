@@ -14,3 +14,4 @@ def user_locale(data, locale):
 class Home(StatesGroup):
     home = State()
     link = State()
+    slaves = State()

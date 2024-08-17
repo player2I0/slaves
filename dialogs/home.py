@@ -33,7 +33,8 @@ async def home_getter(dialog_manager: DialogManager, event_from_user: User, bot:
         owner = db_user.get_owner()
         locale['status'] = {'en': "You are currently a slave of " + owner.name, "ru": "Вы находитесь в рабстве. Ваш хозяин - " + owner.name}
     else:
-        locale['status'] = {'en': "You are currently free", "ru": "Вы (пока что) свободны"}
+        stats = f"{db_user.money} 💸 {len(db_user.slaves)} 👥"
+        locale['status'] = {'en': f"You are currently free\n{stats}", "ru": f"Вы (пока что) свободны.\n{stats}"}
 
         if len(db_user.slaves) > 0:
             data['has_slaves'] = True

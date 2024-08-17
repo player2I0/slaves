@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters.command import Command
 #from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -41,7 +41,7 @@ setup_dialogs(dp)
 async def cmd_start(message: types.Message, dialog_manager: DialogManager, command: CommandObject):
     global db
 
-    #db_user = db.User.get(db.User.id == message.from_user.id)
+    db_user = None
 
     if not db.User.select().where(db.User.id == message.from_user.id).exists():
         usr_name = message.from_user.first_name
@@ -49,12 +49,13 @@ async def cmd_start(message: types.Message, dialog_manager: DialogManager, comma
         if message.from_user.last_name is not None:
             usr_name += ' ' +  message.from_user.last_name
 
-        usr = db.User(id = message.from_user.id, name = usr_name)
-        usr.save(force_insert=True)
+        db_user = db.User(id = message.from_user.id, name = usr_name, lang = message.from_user.language_code)
+        db_user.save(force_insert=True)
     else:
         db_user = db.User.get(db.User.id == message.from_user.id)
 
     #print(command.args)
+    #print(db_user)
 
     if command.args is not None and not db_user.is_enslaved():
         id = int(decode_payload(command.args))
@@ -63,9 +64,15 @@ async def cmd_start(message: types.Message, dialog_manager: DialogManager, comma
 
         if owner is not None and not owner.is_enslaved() and owner.id != db_user.id:
             db_user.enslave(owner)
+            print(states.user_locale({'msg': {'en': '<b>' + db_user.name + '</b> got enslaved via your link!', 'ru': '<b>' + db_user.name + '</b> стал вашим рабом через ссылку!'}}, owner.lang))
+            await bot.send_message(chat_id=owner.id, text=states.user_locale({'msg': {'en': '<b>' + db_user.name + '</b> got enslaved via your link!', 'ru': '<b>' + db_user.name + '</b> стал вашим рабом через ссылку!'}}, owner.lang)['l_msg'], reply_markup=types.InlineKeyboardMarkup(inline_keyboard=[[types.InlineKeyboardButton(text="❌", callback_data='close')]]))
 
     #await message.answer("Hello!")
     await dialog_manager.start(states.Home.home, mode=StartMode.RESET_STACK)
+
+@dp.callback_query(F.data == "close")
+async def send_random_value(callback: types.CallbackQuery):
+    await callback.message.delete()
 
 @dp.message(Command("link"))
 async def cmd_start(message: types.Message, dialog_manager: DialogManager, command: CommandObject):

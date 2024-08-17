@@ -7,11 +7,17 @@ class UsersModel(pw.Model):
     class Meta:
         database = user_db
 
+class CottonFarm(UsersModel):
+    id = pw.IntegerField(primary_key=True)
+    owner = pw.ForeignKeyField()
+
 class User(UsersModel):
     id = pw.IntegerField(primary_key=True)
     ownerId = pw.IntegerField(default=-1)
     slaves = phf.PickleField(default=[])
     name = pw.TextField()
+    money = pw.FloatField(default=0)
+    lang = pw.TextField(default="en")
 
     def enslave(self, owner):
         self.ownerId = owner.id

@@ -41,6 +41,9 @@ class Estate(UsersModel):
 class CottonFarm(Estate):
     size = pw.IntegerField()
 
+    def to_string(self):
+        return {"en": "☁️ Cotton plantation", "ru": "☁️ Плантация хлопка"}
+
 '''
 class UserLink(UsersModel):
     user = pw.ForeignKeyField(User)

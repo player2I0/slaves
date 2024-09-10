@@ -33,13 +33,10 @@ async def slave_manager_getter(dialog_manager: DialogManager, event_from_user: U
 
     return data
 
-async def slave_go_back(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
-    await dialog_manager.done()
-
 manager = Dialog(
     Window(
         Format('<b>{slave_name}</b>'),
-        Button(Format('{l_back}'), when=F['popup'], on_click=slave_go_back, id='b'),
+        Button(Format('{l_back}'), when=F['popup'], on_click=states.dialog_go_back, id='b'),
         state=states.SlaveManager.info
     ),
     getter=slave_manager_getter

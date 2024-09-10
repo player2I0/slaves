@@ -1,7 +1,7 @@
 import re
 
 from aiogram_dialog import Window, Dialog, DialogManager, ShowMode, StartMode
-from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup
+from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup, Start
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.text import Const, Format, List
 
@@ -26,7 +26,8 @@ async def home_getter(dialog_manager: DialogManager, event_from_user: User, bot:
         "back": {"en": "‹ Back", "ru": "‹ Назад"},
         "get_link": {"en": "Your link", "ru": "Ваша ссылка"},
         "slaves": {"en": "Your slaves", "ru": "Ваши рабы"},
-        "slaves_tip": {"en": "Send a message with slave's index to get info about the slave.", "ru": "Отправьте сообщение с номером раба, чтобы узнать о нём больше."}
+        "slaves_tip": {"en": "Send a message with slave's index to get info about the slave.", "ru": "Отправьте сообщение с номером раба, чтобы узнать о нём больше."},
+        "estate": {"en": "Your estate", "ru": "Ваши имения"}
     }
 
     if db_user.is_enslaved():
@@ -38,6 +39,8 @@ async def home_getter(dialog_manager: DialogManager, event_from_user: User, bot:
 
         if len(db_user.slaves) > 0:
             data['has_slaves'] = True
+
+        data['has_estate'] = True
 
     data = data | states.user_locale(locale, event_from_user.language_code) #merge two dicts together (python 3.9+)
 
@@ -89,6 +92,7 @@ dialog = Dialog(
         #Button(Const("Useless button"), id="nothing"),  # button with text and id
         Next(Format("{l_get_link}")),
         SwitchTo(Format("{l_slaves}"), state=states.Home.slaves, when=F['has_slaves'], id="slv"),
+        Start(Format("{l_estate}"), state=states.EstateManager.estate_list, when=F['has_estate'], id="est", data={'popup': True}),
         state=states.Home.home,  # state is used to identify window between dialogs
     ),
     Window(

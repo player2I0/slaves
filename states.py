@@ -29,3 +29,4 @@ class SlaveManager(StatesGroup):
 
 class EstateManager(StatesGroup):
     estate_list = State()
+    shop = State()

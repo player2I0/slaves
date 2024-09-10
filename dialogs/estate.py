@@ -24,6 +24,7 @@ async def estate_manager_getter(dialog_manager: DialogManager, event_from_user: 
     locale = {
         "back": {"en": "‹ Back", "ru": "‹ Назад"},
         "title": {"en": "Send a message with estate's index to know more.\n<b>Your estate:</b>", "ru": "Отправьте сообщение с номером имения, чтобы узнать о нём больше.\n<b>Ваши имения:</b>"},
+        "shop_title": {"en": "Buy estate", "ru": "Покупка имения"},
         "buy": {"en": "Buy estate", "ru": "Купить имения"},
         "no_estate": {"en": "You don't have any estate. You can buy one.", "ru": "У вас нет имений, но вы можете купить одно."}
     }
@@ -53,6 +54,11 @@ async def estate_getter(dialog_manager: DialogManager, event_from_user: User, **
 
     return {'estates': l}
 
+async def estate_shop_getter(dialog_manager: DialogManager, event_from_user: User, **kwargs):
+    db_user = UserDB.get(UserDB.id == event_from_user.id)
+
+    return {'no': 'yes'}
+
 manager = Dialog(
     Window(
         Format('{l_title}\n'),
@@ -72,10 +78,16 @@ manager = Dialog(
             hide_pager=True,
             when=F['has_estate']
         ),
-        Button(Format('{l_buy}'), on_click=states.dialog_go_back, id='buy'),
+        SwitchTo(Format("{l_buy}"), state=states.EstateManager.shop, id="buy"),
         Button(Format('{l_back}'), when=F['popup'], on_click=states.dialog_go_back, id='b'),
         state=states.EstateManager.estate_list,
         getter=estate_getter
+    ),
+    Window(
+        Format('<b>{l_shop_title}</b>\n'),
+        SwitchTo(Format("{l_back}"), state=states.EstateManager.estate_list, id="b"),
+        state=states.EstateManager.shop,
+        getter=estate_shop_getter
     ),
     getter=estate_manager_getter
 )

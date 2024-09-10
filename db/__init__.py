@@ -7,10 +7,6 @@ class UsersModel(pw.Model):
     class Meta:
         database = user_db
 
-class CottonFarm(UsersModel):
-    id = pw.IntegerField(primary_key=True)
-    owner = pw.ForeignKeyField()
-
 class User(UsersModel):
     id = pw.IntegerField(primary_key=True)
     ownerId = pw.IntegerField(default=-1)
@@ -18,6 +14,8 @@ class User(UsersModel):
     name = pw.TextField()
     money = pw.FloatField(default=0)
     lang = pw.TextField(default="en")
+    enslaved_date = pw.DateField()
+    estates = phf.PickleField(default=[])
 
     def enslave(self, owner):
         self.ownerId = owner.id
@@ -33,6 +31,15 @@ class User(UsersModel):
     
     def get_owner(self):
         return User.get(User.id == self.ownerId)
+    
+
+class Estate(UsersModel):
+    id = pw.IntegerField(primary_key=True)
+    owner = pw.ForeignKeyField(User)
+    
+
+class CottonFarm(Estate):
+    size = pw.IntegerField()
 
 '''
 class UserLink(UsersModel):

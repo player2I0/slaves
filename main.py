@@ -1,3 +1,5 @@
+import datetime
+
 import asyncio
 import logging
 import os
@@ -49,7 +51,7 @@ async def cmd_start(message: types.Message, dialog_manager: DialogManager, comma
         if message.from_user.last_name is not None:
             usr_name += ' ' +  message.from_user.last_name
 
-        db_user = db.User(id = message.from_user.id, name = usr_name, lang = message.from_user.language_code)
+        db_user = db.User(id = message.from_user.id, name = usr_name, lang = message.from_user.language_code, enslaved_date = datetime.datetime.today())
         db_user.save(force_insert=True)
     else:
         db_user = db.User.get(db.User.id == message.from_user.id)

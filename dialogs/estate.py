@@ -1,7 +1,7 @@
 import re
 
 from aiogram_dialog import Window, Dialog, DialogManager, ShowMode
-from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup
+from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup, Cancel, Start
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.text import Const, Format, List
 
@@ -57,7 +57,7 @@ async def estate_getter(dialog_manager: DialogManager, event_from_user: User, **
 async def estate_shop_getter(dialog_manager: DialogManager, event_from_user: User, **kwargs):
     db_user = UserDB.get(UserDB.id == event_from_user.id)
 
-    return {'no': 'yes'}
+    return states.user_locale({"back": {"en": "‹ Back", "ru": "‹ Назад"}}, event_from_user.language_code)
 
 manager = Dialog(
     Window(
@@ -67,27 +67,30 @@ manager = Dialog(
             Format("{pos}. {item[0]}"),
             items="estates",
             page_size=20,
-            id="estate_list",
+            id="estates_list",
             when=F['has_estate']
         ),
         ScrollingGroup(
-            NumberedPager(scroll="estate_list"),
+            NumberedPager(scroll="estates_list"),
             width=8,
             height=8,
             id = 'g_scr',
             hide_pager=True,
             when=F['has_estate']
         ),
-        SwitchTo(Format("{l_buy}"), state=states.EstateManager.shop, id="buy"),
-        Button(Format('{l_back}'), when=F['popup'], on_click=states.dialog_go_back, id='b'),
+        Start(Format("{l_buy}"), state=states.EstateManager.shop, id="b"),
+        Cancel(Format('{l_back}'), when=F['popup']),
         state=states.EstateManager.estate_list,
         getter=estate_getter
     ),
+    getter=estate_manager_getter
+)
+
+shop = Dialog(
     Window(
         Format('<b>{l_shop_title}</b>\n'),
-        SwitchTo(Format("{l_back}"), state=states.EstateManager.estate_list, id="b"),
-        state=states.EstateManager.shop,
-        getter=estate_shop_getter
+        Start(Format("{l_back}"), state=states.EstateManager.estate_list, id="b"),
+        state=states.EstateManager.shop
     ),
-    getter=estate_manager_getter
+    getter=estate_shop_getter
 )

@@ -1,7 +1,7 @@
 import re
 
 from aiogram_dialog import Window, Dialog, DialogManager, ShowMode
-from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup
+from aiogram_dialog.widgets.kbd import Button, Next, Back, SwitchTo, NumberedPager, ScrollingGroup, Cancel
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.text import Const, Format, List
 
@@ -36,7 +36,7 @@ async def slave_manager_getter(dialog_manager: DialogManager, event_from_user: U
 manager = Dialog(
     Window(
         Format('<b>{slave_name}</b>'),
-        Button(Format('{l_back}'), when=F['popup'], on_click=states.dialog_go_back, id='b'),
+        Cancel(Format('{l_back}'), when=F['popup']),
         state=states.SlaveManager.info
     ),
     getter=slave_manager_getter

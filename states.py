@@ -23,4 +23,12 @@ class SlaveManager(StatesGroup):
 
 class EstateManager(StatesGroup):
     estate_list = State()
-    shop = State()
+
+
+class EstateShop(StatesGroup):
+    categories = State()
+    plantations = State()
+
+
+class EstateShopBuy(StatesGroup):
+    buy = State()
